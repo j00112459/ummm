@@ -16,25 +16,44 @@
           <span class="btn-label">랜덤</span>
         </button>
         <button class="food-btn btn-soup" @click="recommend('soup')">
-          <span class="btn-icon"></span>
+          <span class="btn-icon">🍲</span>
           <span class="btn-label">국물</span>
         </button>
         <button class="food-btn btn-noodle" @click="recommend('noodle')">
-          <span class="btn-icon"></span>
+          <span class="btn-icon">🍜</span>
           <span class="btn-label">면</span>
         </button>
         <button class="food-btn btn-rice" @click="recommend('rice')">
-          <span class="btn-icon"></span>
+          <span class="btn-icon">🍚</span>
           <span class="btn-label">밥</span>
         </button>
+        <!-- 간식/야식 버튼 - 디자인 검토 후 추가 예정
+        <button class="food-btn btn-snack" @click="recommend('snack')">
+          <span class="btn-icon">🍢</span>
+          <span class="btn-label">간식</span>
+        </button>
+        <button class="food-btn btn-night" @click="recommend('night')">
+          <span class="btn-icon">🍗</span>
+          <span class="btn-label">야식</span>
+        </button>
+        -->
       </div>
+    </div>
+
+    <!-- 이스터에그 화면 -->
+    <div v-if="easterEgg" class="card easter-card">
+      <div class="easter-icon">🥚</div>
+      <p class="easter-title">이스터 에그를 발견하셨습니다!</p>
+      <p class="easter-sub" v-if="easterEgg === 'meal'">개발자 밥 사주기 🍚</p>
+      <p class="easter-sub" v-else>개발자 커피 사주기 ☕</p>
+      <button class="reset-btn" @click="reset">다음에 살게요 🙏</button>
     </div>
 
     <!-- 로딩 화면 -->
     <div v-if="loading" class="card loading-card">
       <div class="loading-icon">🗺️</div>
       <p class="loading-text">근처 식당 찾는 중...</p>
-      <p class="loading-sub">오늘의 점심을 고르는 중이에요.</p>
+      <p class="loading-sub">오늘의 {{ mealLabel }}을 고르는 중이에요.</p>
       <div class="loading-dots"><span></span><span></span><span></span></div>
     </div>
 
@@ -108,12 +127,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const loading = ref(false);
 const errorMessage = ref('');
 const result = ref(null);
 const selectedType = ref('');
+const easterEgg = ref(null);
+
+const mealLabel = computed(() => {
+  const h = new Date().getHours();
+  if (h >= 6 && h < 11) return '아침';
+  if (h >= 11 && h < 15) return '점심';
+  if (h >= 15 && h < 17) return '간식';
+  if (h >= 17 && h < 22) return '저녁';
+  return '야식';
+});
 
 function getCurrentLocation() {
   return new Promise((resolve, reject) => {
@@ -130,6 +159,12 @@ function getCurrentLocation() {
 }
 
 async function recommend(type) {
+  // 3% 확률 이스터에그 (랜덤 버튼만)
+  if (type === 'random' && Math.random() < 0.03) {
+    easterEgg.value = Math.random() < 0.5 ? 'meal' : 'coffee';
+    return;
+  }
+
   selectedType.value = type;
   loading.value = true;
   errorMessage.value = '';
@@ -170,6 +205,7 @@ function reset() {
   result.value = null;
   errorMessage.value = '';
   selectedType.value = '';
+  easterEgg.value = null;
 }
 </script>
 
@@ -295,18 +331,12 @@ h1 {
   font-size: 1rem;
 }
 
-.btn-random {
-  background: #ffe066;
-}
-.btn-soup {
-  background: #ff9f7a;
-}
-.btn-noodle {
-  background: #a8e6cf;
-}
-.btn-rice {
-  background: #b5d5ff;
-}
+.btn-random { background: #ffe066; }
+.btn-soup   { background: #ff9f7a; }
+.btn-noodle { background: #a8e6cf; }
+.btn-rice   { background: #b5d5ff; }
+.btn-snack  { background: #ffd6e7; }
+.btn-night  { background: #d4b8ff; }
 
 /* 로딩 카드 */
 .loading-card {
@@ -373,6 +403,36 @@ h1 {
   to {
     transform: translateY(-10px);
   }
+}
+
+/* 이스터에그 카드 */
+.easter-card {
+  text-align: center;
+}
+
+.easter-icon {
+  font-size: 3.5rem;
+  margin-bottom: 12px;
+  display: block;
+  animation: wiggle 1s infinite;
+}
+
+.easter-title {
+  font-size: 1.2rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+}
+
+.easter-sub {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #E9B349;
+  margin-bottom: 24px;
+  padding: 12px;
+  background: #FFF9E8;
+  border: 2px solid #222;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #222;
 }
 
 /* 에러 카드 */
