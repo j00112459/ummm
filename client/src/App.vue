@@ -4,7 +4,7 @@
     <div v-if="!loading && !result && !errorMessage" class="card main-card">
       <div class="doodle-title">
         <span class="icon-title">🍽️</span>
-        <h1>umm... 오늘 뭐<br />먹을래?</h1>
+        <h1>umm...<br /></h1>
       </div>
       <p class="subtitle">
         고민은 제가 할 거예요.<br />
