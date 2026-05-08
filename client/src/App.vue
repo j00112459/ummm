@@ -145,8 +145,9 @@ async function recommend(type) {
   }
 
   try {
+    const base = import.meta.env.VITE_API_URL || '';
     const res = await fetch(
-      `/api/recommend?type=${type}&lat=${coords.lat}&lng=${coords.lng}`,
+      `${base}/api/recommend?type=${type}&lat=${coords.lat}&lng=${coords.lng}`,
     );
     const data = await res.json();
 
