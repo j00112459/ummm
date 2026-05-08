@@ -1,7 +1,10 @@
 <template>
   <div class="page-wrap">
     <!-- 첫 화면 -->
-    <div v-if="!loading && !result && !errorMessage" class="card main-card">
+    <div
+      v-if="!loading && !result && !errorMessage && !easterEgg"
+      class="card main-card"
+    >
       <div class="doodle-title">
         <span class="icon-title">🍽️</span>
         <h1>오머먹?<br /></h1>
@@ -41,12 +44,31 @@
     </div>
 
     <!-- 이스터에그 화면 -->
-    <div v-if="easterEgg" class="card easter-card">
+    <div
+      v-if="easterEgg"
+      class="card easter-card"
+      :class="{ shake: easterEggShaking }"
+    >
       <div class="easter-icon">🥚</div>
-      <p class="easter-title">이스터 에그를 발견하셨습니다!</p>
-      <p class="easter-sub" v-if="easterEgg === 'meal'">개발자 밥 사주기 🍚</p>
-      <p class="easter-sub" v-else>개발자 커피 사주기 ☕</p>
-      <button class="reset-btn" @click="reset">다음에 살게요 🙏</button>
+      <template v-if="!easterEggPleading">
+        <p class="easter-title">
+          축하합니다<br />이스터 에그를 발견하셨습니다!
+        </p>
+        <p class="easter-sub" v-if="easterEgg === 'meal'">
+          이대주 밥 사주기 🍚
+        </p>
+        <p class="easter-sub" v-else>이대주 커피 사주기 ☕</p>
+        <button class="reset-btn" @click="tryDismissEaster">
+          다음에 살게요 🙏
+        </button>
+      </template>
+      <template v-else>
+        <p class="easter-title">정말요...? 🥹</p>
+        <p class="easter-sub">한번만 더 생각해 주세요!</p>
+        <button class="reset-btn" @click="tryDismissEaster">
+          그냥 나갈게요 😢
+        </button>
+      </template>
     </div>
 
     <!-- 로딩 화면 -->
@@ -128,12 +150,15 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import confetti from 'canvas-confetti';
 
 const loading = ref(false);
 const errorMessage = ref('');
 const result = ref(null);
 const selectedType = ref('');
 const easterEgg = ref(null);
+const easterEggPleading = ref(false);
+const easterEggShaking = ref(false);
 
 const mealLabel = computed(() => {
   const h = new Date().getHours();
@@ -158,10 +183,27 @@ function getCurrentLocation() {
   });
 }
 
+function spawnConfetti() {
+  const colors = [
+    '#ffe066',
+    '#ff9f7a',
+    '#a8e6cf',
+    '#b5d5ff',
+    '#ffd6e7',
+    '#d4b8ff',
+    '#ff6b6b',
+    '#6bcb77',
+  ];
+  const opts = { particleCount: 80, spread: 65, colors, origin: { y: 0.75 } };
+  confetti({ ...opts, origin: { x: 0.05, y: 0.75 }, angle: 60 });
+  confetti({ ...opts, origin: { x: 0.95, y: 0.75 }, angle: 120 });
+}
+
 async function recommend(type) {
   // 3% 확률 이스터에그 (랜덤 버튼만)
-  if (type === 'random' && Math.random() < 0.03) {
+  if (type === 'random' && Math.random() < 0.15) {
     easterEgg.value = Math.random() < 0.5 ? 'meal' : 'coffee';
+    spawnConfetti();
     return;
   }
 
@@ -201,11 +243,25 @@ async function recommend(type) {
   }
 }
 
+function tryDismissEaster() {
+  if (!easterEggPleading.value) {
+    easterEggShaking.value = true;
+    easterEggPleading.value = true;
+    setTimeout(() => {
+      easterEggShaking.value = false;
+    }, 500);
+  } else {
+    reset();
+  }
+}
+
 function reset() {
   result.value = null;
   errorMessage.value = '';
   selectedType.value = '';
   easterEgg.value = null;
+  easterEggPleading.value = false;
+  easterEggShaking.value = false;
 }
 </script>
 
@@ -331,12 +387,24 @@ h1 {
   font-size: 1rem;
 }
 
-.btn-random { background: #ffe066; }
-.btn-soup   { background: #ff9f7a; }
-.btn-noodle { background: #a8e6cf; }
-.btn-rice   { background: #b5d5ff; }
-.btn-snack  { background: #ffd6e7; }
-.btn-night  { background: #d4b8ff; }
+.btn-random {
+  background: #ffe066;
+}
+.btn-soup {
+  background: #ff9f7a;
+}
+.btn-noodle {
+  background: #a8e6cf;
+}
+.btn-rice {
+  background: #b5d5ff;
+}
+.btn-snack {
+  background: #ffd6e7;
+}
+.btn-night {
+  background: #d4b8ff;
+}
 
 /* 로딩 카드 */
 .loading-card {
@@ -406,8 +474,37 @@ h1 {
 }
 
 /* 이스터에그 카드 */
+@keyframes shake {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0deg);
+  }
+  15% {
+    transform: translateX(-8px) rotate(-2deg);
+  }
+  30% {
+    transform: translateX(8px) rotate(2deg);
+  }
+  45% {
+    transform: translateX(-6px) rotate(-1deg);
+  }
+  60% {
+    transform: translateX(6px) rotate(1deg);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+  90% {
+    transform: translateX(3px);
+  }
+}
+
 .easter-card {
   text-align: center;
+}
+
+.easter-card.shake {
+  animation: shake 0.5s ease;
 }
 
 .easter-icon {
@@ -426,10 +523,10 @@ h1 {
 .easter-sub {
   font-size: 1.4rem;
   font-weight: 800;
-  color: #E9B349;
+  color: #e9b349;
   margin-bottom: 24px;
   padding: 12px;
-  background: #FFF9E8;
+  background: #fff9e8;
   border: 2px solid #222;
   border-radius: 12px;
   box-shadow: 3px 3px 0 #222;
