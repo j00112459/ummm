@@ -13,17 +13,21 @@ app.use(express.json());
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const keywordMap = {
-  random: ['한식', '분식', '식당', '밥집', '음식점', '정식', '도시락', '치킨', '피자', '버거'],
+  random: ['한식', '분식', '식당', '밥집', '음식점', '정식', '도시락', '치킨', '피자', '버거', '족발', '보쌈', '떡볶이'],
   soup: ['국밥', '찌개', '해장국', '순대국', '마라탕', '설렁탕', '곰탕', '부대찌개', '된장찌개', '김치찌개', '샤브샤브', '전골', '탕'],
   noodle: ['라멘', '칼국수', '냉면', '우동', '짜장면', '소국수', '막국수', '쌀국수', '파스타', '스파게티', '짬뽕', '볶음면', '국수'],
-  rice: ['백반', '덮밥', '비빔밥', '김치볶음밥', '한식', '솥밥', '오므라이스', '볶음밥', '카레', '돈부리', '초밥', '김밥', '포케']
+  rice: ['백반', '덮밥', '비빔밥', '김치볶음밥', '한식', '솥밥', '오므라이스', '볶음밥', '카레', '돈부리', '초밥', '김밥', '포케'],
+  snack: ['떡볶이', '순대', '튀김', '붕어빵', '분식', '핫도그', '타코야키', '오뎅'],
+  night: ['치킨', '피자', '족발', '보쌈', '라면', '곱창', '막창', '삼겹살']
 };
 
 const typeLabelMap = {
   random: '랜덤',
   soup: '국물',
   noodle: '면',
-  rice: '밥'
+  rice: '밥',
+  snack: '간식',
+  night: '야식'
 };
 
 function pickRandom(arr) {
@@ -107,7 +111,8 @@ app.get('/api/recommend', async (req, res) => {
         y: lat,
         radius: 1000,
         sort: 'distance',
-        size: 15
+        size: 15,
+        category_group_code: 'FD6'
       }
     });
     restaurants = kakaoRes.data.documents;
