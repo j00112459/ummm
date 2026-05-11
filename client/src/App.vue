@@ -201,7 +201,7 @@ function spawnConfetti() {
 
 async function recommend(type) {
   // 3% 확률 이스터에그 (랜덤 버튼만)
-  if (type === 'random' && Math.random() < 0.15) {
+  if (type === 'random' && Math.random() < 0.05) {
     easterEgg.value = Math.random() < 0.5 ? 'meal' : 'coffee';
     spawnConfetti();
     return;
